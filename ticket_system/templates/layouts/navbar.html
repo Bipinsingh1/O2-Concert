@@ -1,0 +1,59 @@
+{% load static %}
+<nav class="navbar navbar-expand-lg navbar-dark site-navbar sticky-top">
+  <div class="container">
+    <a class="navbar-brand fw-black d-flex align-items-center gap-2" href="{% url 'home:index' %}">
+      <span class="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0"
+            style="width:30px;height:30px;background:var(--o2-red);">
+        <i class="fa-solid fa-music text-white" style="font-size:.65rem;"></i>
+      </span>
+      The <span class="text-danger ms-1">O2</span>&nbsp;Arena
+    </a>
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" style="padding:.35rem .5rem;">
+      <span class="navbar-toggler-icon" style="width:1.1em;height:1.1em;"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarMain">
+      <ul class="navbar-nav me-auto gap-1 mt-2 mt-lg-0">
+        <li class="nav-item"><a class="nav-link{% if request.resolver_match.app_name == 'home' %} active{% endif %}" href="{% url 'home:index' %}">Home</a></li>
+        <li class="nav-item"><a class="nav-link{% if request.resolver_match.app_name == 'ticket_sales' %} active{% endif %}" href="{% url 'ticket_sales:list' %}">Buy Tickets</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'home:faq' %}">FAQ</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'home:about' %}">About</a></li>
+      </ul>
+      <ul class="navbar-nav ms-auto align-items-center gap-2 mt-2 mt-lg-0">
+        {% if user.is_authenticated %}
+          {% if user.is_staff %}
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle d-flex align-items-center gap-1" href="#" data-bs-toggle="dropdown" style="color:#fbbf24 !important;">
+                <i class="fa fa-shield-halved"></i> Admin
+              </a>
+              <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow border-0" style="background:var(--o2-navy);border-radius:var(--radius-sm);min-width:200px;">
+                <li><a class="dropdown-item py-2" href="{% url 'dashboard:index' %}"><i class="fa fa-gauge fa-fw me-2 text-danger"></i>Dashboard</a></li>
+                <li><a class="dropdown-item py-2" href="{% url 'ticket_admin:list' %}"><i class="fa fa-ticket fa-fw me-2 text-danger"></i>Manage Tickets</a></li>
+                <li><a class="dropdown-item py-2" href="{% url 'reports:index' %}"><i class="fa fa-chart-bar fa-fw me-2 text-danger"></i>Reports</a></li>
+                <li><a class="dropdown-item py-2" href="{% url 'qr_scanner:scanner' %}"><i class="fa fa-qrcode fa-fw me-2 text-danger"></i>QR Scanner</a></li>
+                <li><hr class="dropdown-divider" style="border-color:rgba(255,255,255,.08);"></li>
+                <li><a class="dropdown-item py-2" href="/django-admin/"><i class="fa fa-wrench fa-fw me-2"></i>Django Admin</a></li>
+              </ul>
+            </li>
+          {% else %}
+            <li class="nav-item"><a class="nav-link{% if request.resolver_match.app_name == 'my_tickets' %} active{% endif %}" href="{% url 'my_tickets:list' %}"><i class="fa fa-ticket me-1"></i>My Tickets</a></li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'accounts:profile' %}">
+                <span class="d-inline-flex align-items-center gap-1">
+                  <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-danger text-white fw-bold flex-shrink-0"
+                        style="width:26px;height:26px;font-size:.7rem;">{{ user.first_name.0|default:user.email.0|upper }}</span>
+                  {{ user.first_name|default:user.email }}
+                </span>
+              </a>
+            </li>
+          {% endif %}
+          <li class="nav-item">
+            <a class="btn btn-sm btn-outline-danger px-3" href="{% url 'accounts:logout' %}">Logout</a>
+          </li>
+        {% else %}
+          <li class="nav-item"><a class="nav-link" href="{% url 'accounts:login' %}">Login</a></li>
+          <li class="nav-item"><a class="btn btn-danger btn-sm px-3" href="{% url 'accounts:register' %}">Register</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>

@@ -1,0 +1,130 @@
+{% load static %}
+
+<!-- Pre-footer CTA -->
+<div style="background:linear-gradient(135deg,#9d0208 0%,#e63946 100%);">
+  <div class="container py-3">
+    <div class="d-flex flex-column flex-md-row align-items-center justify-content-between gap-3">
+      <div class="text-white">
+        <p class="fw-bold mb-0"><i class="fa fa-bolt me-2"></i>Don't miss out — limited tickets remaining</p>
+        <p class="small mb-0 opacity-75">Dua Lipa · The O2 Arena, London · 30 November 2026</p>
+      </div>
+      <a href="{% url 'ticket_sales:list' %}" class="btn btn-light fw-bold px-4 text-danger text-nowrap">
+        Get Tickets <i class="fa fa-arrow-right ms-2"></i>
+      </a>
+    </div>
+  </div>
+</div>
+
+<footer style="background:#111;">
+  <div class="container py-4">
+    <div class="row gy-4 align-items-start">
+
+      <!-- Brand -->
+      <div class="col-lg-5 col-md-6">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <span class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                style="width:34px;height:34px;background:linear-gradient(135deg,#e63946,#9d0208);">
+            <i class="fa-solid fa-music text-white" style="font-size:.75rem;"></i>
+          </span>
+          <span class="fw-bold text-white">The O2 Arena</span>
+        </div>
+        <p class="text-secondary small mb-3" style="line-height:1.6;">
+          An iconic 20,000-capacity venue in Greenwich, London. Home to the world's biggest artists and most unforgettable live events.
+        </p>
+        <div class="d-flex gap-2">
+          <a href="#" aria-label="Instagram" class="social-btn"><i class="fab fa-instagram"></i></a>
+          <a href="#" aria-label="X / Twitter" class="social-btn"><i class="fab fa-x-twitter"></i></a>
+          <a href="#" aria-label="Facebook"  class="social-btn"><i class="fab fa-facebook-f"></i></a>
+          <a href="#" aria-label="TikTok"    class="social-btn"><i class="fab fa-tiktok"></i></a>
+        </div>
+      </div>
+
+      <!-- Venue info -->
+      <div class="col-lg-4 col-md-6">
+        <h6 class="footer-heading">Venue &amp; Getting There</h6>
+        <ul class="list-unstyled mb-0">
+          <li class="d-flex gap-2 mb-2">
+            <i class="fa fa-location-dot text-danger mt-1 fa-fw flex-shrink-0"></i>
+            <span class="text-secondary small">Peninsula Square, London SE10 0DX &nbsp;·&nbsp;
+              <a href="https://maps.google.com/?q=The+O2+Arena+London" target="_blank" rel="noopener"
+                 class="text-danger text-decoration-none">View on map <i class="fa fa-arrow-up-right-from-square" style="font-size:.6rem;"></i></a>
+            </span>
+          </li>
+          <li class="d-flex gap-2 mb-2">
+            <i class="fa fa-train text-danger mt-1 fa-fw flex-shrink-0"></i>
+            <span class="text-secondary small">North Greenwich (Jubilee Line) · 5-min walk</span>
+          </li>
+          <li class="d-flex gap-2 mb-2">
+            <i class="fa fa-clock text-danger mt-1 fa-fw flex-shrink-0"></i>
+            <span class="text-secondary small">Doors 7:00 pm · Show 9:00 pm</span>
+          </li>
+          <li class="d-flex gap-2">
+            <i class="fa fa-circle-info text-danger mt-1 fa-fw flex-shrink-0"></i>
+            <span class="text-secondary small">Cancellations accepted up to 72 h before the event</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Trust badges -->
+      <div class="col-lg-3 col-md-12">
+        <h6 class="footer-heading">Secure Booking</h6>
+        <div class="d-flex flex-column gap-2">
+          <div class="trust-badge"><i class="fa fa-shield-halved text-danger me-2"></i>Secure Checkout</div>
+          <div class="trust-badge"><i class="fa fa-lock text-danger me-2"></i>256-bit Encryption</div>
+          <div class="trust-badge"><i class="fa fa-rotate-left text-danger me-2"></i>Cancellation Policy</div>
+          <div class="trust-badge mt-1">
+            <i class="fab fa-cc-visa text-secondary me-2" style="font-size:1.3rem;"></i>
+            <i class="fab fa-cc-mastercard text-secondary me-2" style="font-size:1.3rem;"></i>
+            <i class="fab fa-cc-amex text-secondary" style="font-size:1.3rem;"></i>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Bottom bar -->
+  <div style="border-top:1px solid rgba(255,255,255,.07);background:#0a0a0a;">
+    <div class="container py-2">
+      <div class="d-flex flex-column flex-md-row align-items-center justify-content-between gap-1">
+        <p class="text-secondary mb-0" style="font-size:.78rem;">&copy; 2026 The O2 Arena. All rights reserved.</p>
+        <div class="d-flex gap-3">
+          <a href="#" class="text-secondary text-decoration-none" style="font-size:.78rem;">Privacy Policy</a>
+          <a href="#" class="text-secondary text-decoration-none" style="font-size:.78rem;">Terms &amp; Conditions</a>
+          <a href="#" class="text-secondary text-decoration-none" style="font-size:.78rem;">Cookie Policy</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<style>
+.footer-heading {
+  color: #fff;
+  font-weight: 700;
+  font-size: .7rem;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  margin-bottom: .75rem;
+}
+.social-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.08);
+  color: #9ca3af;
+  text-decoration: none;
+  font-size: .8rem;
+  transition: background .15s, color .15s;
+}
+.social-btn:hover { background: #e63946; color: #fff; }
+.trust-badge {
+  color: #6b7280;
+  font-size: .8rem;
+  display: flex;
+  align-items: center;
+}
+</style>

@@ -1,0 +1,68 @@
+{% extends "layouts/base.html" %}
+{% block title %}Booking Confirmed – The O2 Arena{% endblock %}
+{% block content %}
+<div class="row justify-content-center text-center">
+  <div class="col-lg-6">
+    <div class="py-5">
+      <i class="fa fa-circle-check fa-5x text-success mb-4"></i>
+      <h1 class="fw-bold mb-2">Booking Confirmed!</h1>
+      <p class="text-muted lead mb-4">
+        {% if quantity > 1 %}
+          {{ quantity }} tickets for Dua Lipa Live at The O2 Arena have been booked.
+        {% else %}
+          Your ticket for Dua Lipa Live at The O2 Arena has been booked.
+        {% endif %}
+      </p>
+
+      <div class="card border-0 shadow-sm mb-4 text-start">
+        <div class="card-body p-4">
+          <div class="row g-2 mb-3">
+            <div class="col-6 text-muted">Order Number</div>
+            <div class="col-6 fw-semibold">{{ order.order_number }}</div>
+            <div class="col-6 text-muted">Ticket Type</div>
+            <div class="col-6">{{ order.ticket.category.name }}</div>
+            <div class="col-6 text-muted">Quantity</div>
+            <div class="col-6 fw-semibold">{{ quantity }} ticket{{ quantity|pluralize }}</div>
+            <div class="col-6 text-muted">Total Paid</div>
+            <div class="col-6 fw-bold text-danger">
+              {% if quantity > 1 %}
+                £{% widthratio order.total_amount 1 quantity %}
+              {% else %}
+                £{{ order.total_amount }}
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Ticket numbers list -->
+          <div class="border-top pt-3">
+            <p class="fw-semibold small text-uppercase text-muted mb-2" style="letter-spacing:.05em;">
+              <i class="fa fa-ticket text-danger me-1"></i>Your Ticket{{ quantity|pluralize }}
+            </p>
+            {% for tn in ticket_numbers %}
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <span class="badge bg-light text-dark border" style="font-family:monospace;font-size:.85rem;">{{ tn }}</span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <div class="alert alert-info border-0 small">
+        <i class="fa fa-envelope me-2"></i>
+        {% if quantity > 1 %}
+          All {{ quantity }} ticket PDFs with QR codes have been sent to your email address.
+        {% else %}
+          Your ticket PDF with QR code has been sent to your email address.
+        {% endif %}
+      </div>
+
+      <div class="d-flex gap-3 justify-content-center mt-4">
+        {% if user.is_authenticated %}
+        <a href="{% url 'my_tickets:list' %}" class="btn btn-danger"><i class="fa fa-ticket me-2"></i>View My Tickets</a>
+        {% endif %}
+        <a href="{% url 'home:index' %}" class="btn btn-outline-secondary">Back to Home</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

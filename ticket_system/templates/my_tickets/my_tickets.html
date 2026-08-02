@@ -1,0 +1,133 @@
+{% extends "layouts/base.html" %}
+{% block title %}My Tickets{% endblock %}
+{% block content %}
+<h2 class="fw-bold mb-4"><i class="fa fa-ticket text-danger me-2"></i>My Tickets</h2>
+
+{% if tickets %}
+
+{# ── Active Tickets ──────────────────────────────────────────────── #}
+<h5 class="fw-semibold mb-3"><i class="fa fa-circle-check text-success me-2"></i>Active Tickets</h5>
+{% if active_tickets %}
+<div class="row g-4 mb-5">
+{% for ticket in active_tickets %}
+<div class="col-md-6">
+  {% if ticket.category.category_type == 'vip' %}
+  <div class="card h-100 shadow-sm ticket-card ticket-vip">
+    <div class="ticket-card-header">
+      <span class="fw-semibold small"><i class="fa fa-star me-2"></i>{{ ticket.category.name }}</span>
+      <span class="badge" style="background:#6b4f0e;">VIP</span>
+    </div>
+  {% elif ticket.category.category_type == 'restricted' %}
+  <div class="card h-100 shadow-sm ticket-card ticket-restricted">
+    <div class="ticket-card-header">
+      <span class="fw-semibold small"><i class="fa fa-eye-slash me-2"></i>{{ ticket.category.name }}</span>
+      <span class="badge" style="background:#7a1120;">RESTRICTED</span>
+    </div>
+  {% elif ticket.category.category_type == 'group' %}
+  <div class="card h-100 shadow-sm ticket-card ticket-group">
+    <div class="ticket-card-header">
+      <span class="fw-semibold small"><i class="fa fa-users me-2"></i>{{ ticket.category.name }}</span>
+      <span class="badge" style="background:#0a2a6e;">GROUP</span>
+    </div>
+  {% else %}
+  <div class="card h-100 shadow-sm ticket-card ticket-standard">
+    <div class="ticket-card-header">
+      <span class="fw-semibold small"><i class="fa fa-user me-2"></i>{{ ticket.category.name }}</span>
+      <span class="badge" style="background:#0a3d24;">STANDARD</span>
+    </div>
+  {% endif %}
+    <div class="card-body p-4">
+      <div class="d-flex justify-content-between align-items-start mb-3">
+        <code class="small text-muted">{{ ticket.ticket_number }}</code>
+        <span class="badge bg-success">{{ ticket.get_status_display }}</span>
+      </div>
+      <div class="small text-muted mb-3">
+        <div><i class="fa fa-calendar me-1"></i>Event: 30 November 2026</div>
+        <div><i class="fa fa-pound-sign me-1"></i>Paid: £{{ ticket.amount_paid }}</div>
+        <div><i class="fa fa-clock me-1"></i>Purchased: {{ ticket.purchase_date|date:"d M Y" }}</div>
+      </div>
+      {% if ticket.qr_code %}
+      <div class="text-center mb-3">
+        <img src="{{ ticket.qr_code.url }}" alt="QR Code" style="width:80px;height:80px;" class="border rounded">
+      </div>
+      {% endif %}
+      <div class="d-flex gap-2">
+        <a href="{% url 'my_tickets:detail' ticket.ticket_number %}" class="btn btn-outline-secondary btn-sm flex-grow-1">View</a>
+        {% if ticket.category.is_amendable %}
+        <a href="{% url 'my_tickets:upgrade' ticket.ticket_number %}" class="btn btn-sm btn-upgrade">Upgrade</a>
+        {% endif %}
+        <a href="{% url 'my_tickets:cancel' ticket.ticket_number %}" class="btn btn-outline-danger btn-sm">Cancel</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+</div>
+{% else %}
+<p class="text-muted small mb-5">No active tickets.</p>
+{% endif %}
+
+{# ── Cancelled Tickets ───────────────────────────────────────────── #}
+{% if cancelled_tickets %}
+<hr>
+<h5 class="fw-semibold mb-3 mt-2"><i class="fa fa-ban text-danger me-2"></i>Cancelled Tickets</h5>
+<div class="row g-3">
+{% for ticket in cancelled_tickets %}
+  <div class="col-md-6">
+    <div class="card h-100 border-0 shadow-sm" style="border-radius:12px; background:#f8f9fa; opacity:0.82;">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <div>
+            <div class="fw-semibold small text-muted">{{ ticket.category.name }}</div>
+            <code class="small text-muted">{{ ticket.ticket_number }}</code>
+          </div>
+          <span class="badge bg-danger">Cancelled</span>
+        </div>
+        <div class="small text-muted mt-2">
+          <div><i class="fa fa-pound-sign me-1"></i>Paid: £{{ ticket.amount_paid }}</div>
+          <div><i class="fa fa-clock me-1"></i>Purchased: {{ ticket.purchase_date|date:"d M Y" }}</div>
+        </div>
+        <div class="mt-3">
+          <a href="{% url 'my_tickets:detail' ticket.ticket_number %}" class="btn btn-outline-secondary btn-sm">View Details</a>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endfor %}
+</div>
+{% endif %}
+
+{% else %}
+<div class="text-center py-5">
+  <i class="fa fa-ticket fa-4x text-muted mb-4 opacity-25"></i>
+  <h5 class="text-muted">No tickets yet</h5>
+  <p class="text-muted small">Book your tickets for Dua Lipa Live at The O2!</p>
+  <a href="{% url 'ticket_sales:list' %}" class="btn btn-danger mt-2"><i class="fa fa-ticket me-2"></i>Buy Tickets</a>
+</div>
+{% endif %}
+
+<style>
+.ticket-card { border-radius: 12px; overflow: hidden; border-width: 2px !important; }
+.ticket-vip        { border-color: #6b4f0e !important; }
+.ticket-restricted { border-color: #7a1120 !important; }
+.ticket-group      { border-color: #0a2a6e !important; }
+.ticket-standard   { border-color: #0a3d24 !important; }
+
+.ticket-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1.25rem;
+  border-bottom: 1px solid rgba(0,0,0,0.10);
+}
+.ticket-vip        .ticket-card-header { background: rgba(107,79,14,0.10); color: #6b4f0e; }
+.ticket-restricted .ticket-card-header { background: rgba(122,17,32,0.08); color: #7a1120; }
+.ticket-group      .ticket-card-header { background: rgba(10,42,110,0.08); color: #0a2a6e; }
+.ticket-standard   .ticket-card-header { background: rgba(10,61,36,0.08);  color: #0a3d24; }
+
+.ticket-vip        .btn-upgrade { background:#6b4f0e; border-color:#6b4f0e; color:#fff; }
+.ticket-standard   .btn-upgrade { background:#0a3d24; border-color:#0a3d24; color:#fff; }
+.ticket-group      .btn-upgrade { background:#0a2a6e; border-color:#0a2a6e; color:#fff; }
+.ticket-restricted .btn-upgrade { background:#7a1120; border-color:#7a1120; color:#fff; }
+</style>
+{% endblock %}

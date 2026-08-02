@@ -1,0 +1,64 @@
+{% extends "layouts/base.html" %}
+{% block title %}Buy Tickets – The O2 Arena{% endblock %}
+{% block content %}
+<h1 class="fw-bold mb-2"><i class="fa fa-ticket text-danger me-2"></i>Buy Tickets</h1>
+<p class="text-muted mb-4">Dua Lipa Live – The O2 Arena, 30 November 2026</p>
+
+{% if not sales_open %}
+  <div class="alert alert-warning"><i class="fa fa-clock me-2"></i>Ticket sales have not opened yet. Sales begin on <strong>1 July 2026</strong>.</div>
+{% endif %}
+
+{% if not user.is_authenticated %}
+<div class="alert alert-info border-0 mb-4">
+  <i class="fa fa-tags me-2"></i>
+  <a href="{% url 'accounts:register' %}" class="alert-link fw-bold">Register or login</a> to unlock early-bird discounts (up to 10% off)!
+  You can still <strong>buy as a guest</strong> below without an account.
+</div>
+{% endif %}
+
+<div class="row g-4">
+  {% for cat in categories %}
+  <div class="col-md-6 col-lg-3">
+    <div class="card h-100 border-0 shadow-sm ticket-card {% if cat.category_type == 'vip' %}ticket-card-vip{% endif %}">
+      <div class="card-body text-center p-4 d-flex flex-column">
+        {% if cat.category_type == 'vip' %}
+          <span class="badge bg-warning text-dark mb-2">⭐ VIP Experience</span>
+        {% elif cat.category_type == 'group' %}
+          <span class="badge bg-success mb-2">👥 Group (up to 5)</span>
+        {% elif cat.category_type == 'restricted' %}
+          <span class="badge bg-secondary mb-2">🎭 Restricted View</span>
+        {% else %}
+          <span class="badge bg-primary mb-2">🎵 Standard</span>
+        {% endif %}
+        <h5 class="fw-bold mt-2">{{ cat.name }}</h5>
+        <p class="text-muted small flex-grow-1">{{ cat.description }}</p>
+        <div class="price-tag my-3">£{{ cat.price }}</div>
+        <div class="small text-start mb-3 px-2">
+          <div class="d-flex justify-content-between mb-1">
+            <span class="text-muted">Refundable</span>
+            {% if cat.is_refundable %}<i class="fa fa-check-circle text-success"></i>{% else %}<i class="fa fa-times-circle text-danger"></i>{% endif %}
+          </div>
+          <div class="d-flex justify-content-between mb-1">
+            <span class="text-muted">Amendable</span>
+            {% if cat.is_amendable %}<i class="fa fa-check-circle text-success"></i>{% else %}<i class="fa fa-times-circle text-danger"></i>{% endif %}
+          </div>
+          <div class="d-flex justify-content-between">
+            <span class="text-muted">Remaining</span>
+            <strong class="{% if cat.remaining < 20 %}text-danger{% else %}text-success{% endif %}">{{ cat.remaining }}</strong>
+          </div>
+        </div>
+        {% if cat.is_available and sales_open %}
+          <a href="{% url 'ticket_sales:select' category_id=cat.id %}" class="btn btn-danger fw-semibold w-100 mt-auto">Select</a>
+        {% elif not sales_open %}
+          <button class="btn btn-secondary w-100 mt-auto" disabled>Not Yet Available</button>
+        {% else %}
+          <a href="{% url 'ticket_sales:waitlist' category_id=cat.id %}" class="btn btn-outline-secondary w-100 mt-auto">
+            <i class="fa fa-bell me-1"></i>Sold Out – Join Waitlist
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

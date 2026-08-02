@@ -1,0 +1,188 @@
+{% extends "layouts/base.html" %}
+{% block title %}Home – The O2 Arena | Dua Lipa 2026{% endblock %}
+{% block content %}
+
+<!-- Hero -->
+<div class="hero-banner rounded-4 p-5 mb-5 text-white text-center position-relative overflow-hidden">
+  <div class="position-relative" style="z-index:1;">
+    <p class="section-label text-danger fw-bold text-uppercase mb-3">
+      <i class="fa fa-music me-2"></i>One Night Only · London
+    </p>
+    <div class="glitter-wrapper">
+      <h1 class="fw-black mb-1 glitter-text" style="font-size:clamp(2.5rem,8vw,5rem);letter-spacing:-0.04em;">Dua Lipa</h1>
+      <span class="sparkle-dot" style="font-size:1.1rem;top:-14px;left:8%;animation-delay:0s;">✦</span>
+      <span class="sparkle-dot" style="font-size:0.8rem;top:-8px;left:30%;animation-delay:0.4s;">✦</span>
+      <span class="sparkle-dot" style="font-size:1.3rem;top:-18px;right:18%;animation-delay:0.7s;">✦</span>
+      <span class="sparkle-dot" style="font-size:0.7rem;top:10%;right:5%;animation-delay:1s;">✦</span>
+      <span class="sparkle-dot" style="font-size:0.9rem;bottom:-8px;left:18%;animation-delay:0.3s;">✦</span>
+      <span class="sparkle-dot" style="font-size:1rem;bottom:-12px;right:25%;animation-delay:0.9s;">✦</span>
+      <span class="sparkle-dot" style="font-size:0.75rem;top:30%;left:2%;animation-delay:1.3s;">✦</span>
+    </div>
+    <p class="mb-4 fw-light" style="font-size:1.15rem;color:rgba(255,255,255,.7);">Live at The O2 Arena, London</p>
+
+    <div class="d-flex justify-content-center gap-3 mb-5 flex-wrap">
+      <div class="event-meta-pill"><i class="fa fa-calendar me-2 text-danger"></i><strong>30 November 2026</strong></div>
+      <div class="event-meta-pill"><i class="fa fa-location-dot me-2 text-danger"></i><strong>The O2, Greenwich</strong></div>
+      <div class="event-meta-pill"><i class="fa fa-door-open me-2 text-danger"></i><strong>Doors 7 pm</strong></div>
+    </div>
+
+    <!-- Countdown -->
+    <div class="countdown-grid mb-5 justify-content-center">
+      <div class="countdown-block"><span class="countdown-num" id="cd-days">--</span><span class="countdown-label">Days</span></div>
+      <div class="countdown-block"><span class="countdown-num" id="cd-hours">--</span><span class="countdown-label">Hours</span></div>
+      <div class="countdown-block"><span class="countdown-num" id="cd-mins">--</span><span class="countdown-label">Mins</span></div>
+      <div class="countdown-block"><span class="countdown-num" id="cd-secs">--</span><span class="countdown-label">Secs</span></div>
+    </div>
+
+    {% if sales_open %}
+      <a href="{% url 'ticket_sales:list' %}" class="btn btn-danger btn-lg px-5 fw-bold shadow-red">
+        <i class="fa fa-ticket me-2"></i>Get Tickets Now
+      </a>
+    {% else %}
+      <div class="d-inline-block px-4 py-2 rounded-pill" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);">
+        <i class="fa fa-clock me-2 text-warning"></i>
+        <span class="fw-semibold">Tickets go on sale <strong class="text-warning">1 July 2026</strong></span>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Discount Banner -->
+{% if not user.is_authenticated %}
+<div class="discount-banner mb-5 d-flex align-items-start gap-3">
+  <i class="fa fa-tags fa-lg text-blue mt-1" style="color:#3b82f6;flex-shrink:0;"></i>
+  <div>
+    <strong>Early-Bird Discount for Members</strong><br>
+    <span class="text-muted">Buy in <strong>July</strong> for 10% off · <strong>August</strong> for 5% off · <strong>September</strong> for 10% off.</span>
+    <a href="{% url 'accounts:register' %}" class="ms-2 fw-semibold text-decoration-none" style="color:#2563eb;">Register free →</a>
+  </div>
+</div>
+{% endif %}
+
+<!-- Tickets -->
+<div class="mb-2 d-flex align-items-end justify-content-between">
+  <div>
+    <p class="section-label mb-0">Choose your experience</p>
+    <h2 class="section-title">Available Tickets</h2>
+  </div>
+  <span class="text-muted small">{{ categories|length }} categories</span>
+</div>
+
+<div class="row g-4 mb-5">
+  {% for cat in categories %}
+  <div class="col-md-6 col-lg-3">
+    <div class="card h-100 ticket-card {% if cat.category_type == 'vip' %}ticket-card-vip{% endif %} position-relative overflow-hidden">
+
+      <!-- coloured top bar -->
+      <div class="ticket-badge-bar
+        {% if cat.category_type == 'vip' %}bg-warning
+        {% elif cat.category_type == 'group' %}bg-success
+        {% elif cat.category_type == 'restricted' %}bg-secondary
+        {% else %}bg-danger{% endif %}"></div>
+
+      <div class="card-body text-center px-4 pt-4 pb-3 d-flex flex-column">
+        {% if cat.category_type == 'vip' %}
+          <span class="badge bg-warning text-dark mb-3">⭐ VIP Experience</span>
+        {% elif cat.category_type == 'group' %}
+          <span class="badge bg-success mb-3">👥 Group (up to 5)</span>
+        {% elif cat.category_type == 'restricted' %}
+          <span class="badge bg-secondary mb-3">🎭 Restricted View</span>
+        {% else %}
+          <span class="badge bg-danger mb-3">🎵 Standard</span>
+        {% endif %}
+
+        <h5 class="fw-bold mb-1">{{ cat.name }}</h5>
+        <p class="text-muted small flex-grow-1 mb-3">{{ cat.description }}</p>
+        <div class="price-tag mb-3">£{{ cat.price }}</div>
+
+        <div class="mb-3">
+          <div class="ticket-detail-row">
+            <span class="text-muted">Refundable</span>
+            {% if cat.is_refundable %}<span class="text-success fw-semibold"><i class="fa fa-check me-1"></i>Yes</span>
+            {% else %}<span class="text-danger fw-semibold"><i class="fa fa-xmark me-1"></i>No</span>{% endif %}
+          </div>
+          <div class="ticket-detail-row">
+            <span class="text-muted">Upgradeable</span>
+            {% if cat.is_amendable %}<span class="text-success fw-semibold"><i class="fa fa-check me-1"></i>Yes</span>
+            {% else %}<span class="text-muted fw-semibold"><i class="fa fa-xmark me-1"></i>No</span>{% endif %}
+          </div>
+          <div class="ticket-detail-row">
+            <span class="text-muted">Remaining</span>
+            <span class="fw-bold {% if cat.remaining < 20 %}text-danger{% elif cat.remaining < 60 %}text-warning{% else %}text-success{% endif %}">{{ cat.remaining }}</span>
+          </div>
+        </div>
+
+        {% if cat.is_available and sales_open %}
+          <a href="{% url 'ticket_sales:select' category_id=cat.id %}" class="btn btn-danger w-100 mt-auto">Buy Now</a>
+        {% elif not sales_open %}
+          <button class="btn btn-secondary w-100 mt-auto" disabled>Not Available Yet</button>
+        {% else %}
+          <a href="{% url 'ticket_sales:waitlist' category_id=cat.id %}" class="btn btn-outline-secondary w-100 mt-auto">
+            <i class="fa fa-bell me-1"></i>Join Waitlist
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% empty %}
+    <div class="col-12"><p class="text-muted">Ticket information loading soon.</p></div>
+  {% endfor %}
+</div>
+
+<!-- Info Row -->
+<div class="row g-4">
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-body p-4">
+        <h5 class="fw-bold mb-3"><i class="fa fa-circle-info text-danger me-2"></i>Event Information</h5>
+        <div class="d-flex flex-column gap-2">
+          <div class="d-flex justify-content-between small"><span class="text-muted">Artist</span><strong>Dua Lipa</strong></div>
+          <div class="d-flex justify-content-between small"><span class="text-muted">Venue</span><strong>The O2 Arena, London</strong></div>
+          <div class="d-flex justify-content-between small"><span class="text-muted">Date</span><strong>30 November 2026</strong></div>
+          <div class="d-flex justify-content-between small"><span class="text-muted">Doors open</span><strong>7:00 pm</strong></div>
+          <div class="d-flex justify-content-between small"><span class="text-muted">Show starts</span><strong>9:00 pm</strong></div>
+          <div class="d-flex justify-content-between small"><span class="text-muted">Capacity</span><strong>1,000 seats</strong></div>
+          <div class="d-flex justify-content-between small"><span class="text-muted">Payment</span><strong>Card only (online)</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-body p-4">
+        <h5 class="fw-bold mb-3"><i class="fa fa-shield text-danger me-2"></i>Booking Rules</h5>
+        <div class="d-flex flex-column gap-2 small">
+          <div class="d-flex align-items-start gap-2"><i class="fa fa-check-circle text-success mt-1 flex-shrink-0"></i><span>Register to unlock early-bird discounts (up to 10% off)</span></div>
+          <div class="d-flex align-items-start gap-2"><i class="fa fa-check-circle text-success mt-1 flex-shrink-0"></i><span>Guest checkout available — no account required</span></div>
+          <div class="d-flex align-items-start gap-2"><i class="fa fa-check-circle text-success mt-1 flex-shrink-0"></i><span>Free cancellation up to 72 hours before the event</span></div>
+          <div class="d-flex align-items-start gap-2"><i class="fa fa-check-circle text-success mt-1 flex-shrink-0"></i><span>Ticket upgrades allowed at any time (no downgrades)</span></div>
+          <div class="d-flex align-items-start gap-2"><i class="fa fa-check-circle text-success mt-1 flex-shrink-0"></i><span>Transfer your ticket to another registered user</span></div>
+          <div class="d-flex align-items-start gap-2"><i class="fa fa-xmark-circle text-danger mt-1 flex-shrink-0"></i><span>Guest purchases are non-refundable</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  const target = new Date('2026-11-30T19:00:00').getTime();
+  function tick() {
+    const diff = target - Date.now();
+    if (diff <= 0) { document.querySelectorAll('.countdown-num').forEach(el => el.textContent = '0'); return; }
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    document.getElementById('cd-days').textContent  = String(d).padStart(2,'0');
+    document.getElementById('cd-hours').textContent = String(h).padStart(2,'0');
+    document.getElementById('cd-mins').textContent  = String(m).padStart(2,'0');
+    document.getElementById('cd-secs').textContent  = String(s).padStart(2,'0');
+  }
+  tick(); setInterval(tick, 1000);
+})();
+</script>
+{% endblock %}

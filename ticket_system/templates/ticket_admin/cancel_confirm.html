@@ -1,0 +1,22 @@
+{% extends "layouts/base.html" %}
+{% block title %}Cancel Ticket – Admin{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-5">
+    <h2 class="fw-bold mb-4 text-danger"><i class="fa fa-ban me-2"></i>Cancel Ticket</h2>
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-body p-4">
+        <p class="text-muted">You are cancelling ticket <code>{{ ticket.ticket_number }}</code> on behalf of {{ ticket.customer_name }}.</p>
+        <div class="alert alert-warning border-0">Admin cancellations are processed regardless of refund eligibility. A 20% fee applies to refundable tickets.</div>
+        <form method="post">
+          {% csrf_token %}
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-danger fw-bold">Confirm Cancellation</button>
+            <a href="{% url 'ticket_admin:detail' ticket.ticket_number %}" class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

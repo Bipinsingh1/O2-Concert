@@ -1,0 +1,39 @@
+{% extends "layouts/base.html" %}
+{% block title %}Join Waitlist – {{ category.name }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-5">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-dark text-white fw-semibold">
+        <i class="fa fa-bell me-2"></i>Join Waitlist – {{ category.name }}
+      </div>
+      <div class="card-body p-4">
+        <p class="text-muted mb-4">
+          <strong>{{ category.name }}</strong> tickets are currently sold out.
+          Enter your email and we'll notify you the moment one becomes available through a cancellation.
+        </p>
+        <form method="post">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Your email address</label>
+            {% if user.is_authenticated %}
+              <input type="email" name="email" class="form-control" value="{{ user.email }}" readonly>
+              <div class="form-text">We'll notify you at your registered email.</div>
+            {% else %}
+              <input type="email" name="email" class="form-control" placeholder="you@example.com" required>
+            {% endif %}
+          </div>
+          <button type="submit" class="btn btn-danger w-100 fw-semibold">
+            <i class="fa fa-bell me-2"></i>Notify Me When Available
+          </button>
+        </form>
+      </div>
+      <div class="card-footer bg-transparent">
+        <a href="{% url 'ticket_sales:list' %}" class="btn btn-outline-secondary btn-sm">
+          <i class="fa fa-arrow-left me-1"></i>Back to Tickets
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

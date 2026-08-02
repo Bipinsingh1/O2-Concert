@@ -1,0 +1,58 @@
+{% extends "layouts/base.html" %}
+{% block title %}Ticket – {{ ticket.ticket_number }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <nav aria-label="breadcrumb" class="mb-3">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'my_tickets:list' %}">My Tickets</a></li>
+        <li class="breadcrumb-item active">{{ ticket.ticket_number }}</li>
+      </ol>
+    </nav>
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+        <span class="fw-bold"><i class="fa fa-ticket me-2"></i>{{ ticket.category.name }}</span>
+        <span class="badge {% if ticket.status == 'active' %}bg-success{% elif ticket.status == 'cancelled' %}bg-danger{% else %}bg-warning text-dark{% endif %}">{{ ticket.get_status_display }}</span>
+      </div>
+      <div class="card-body p-4">
+        <div class="row">
+          <div class="col-md-8">
+            <table class="table table-borderless small mb-0">
+              <tr><td class="text-muted">Ticket Number</td><td><code class="fw-bold">{{ ticket.ticket_number }}</code></td></tr>
+              <tr><td class="text-muted">Event</td><td>Dua Lipa – The O2, 30 Nov 2026</td></tr>
+              <tr><td class="text-muted">Category</td><td>{{ ticket.category.name }}</td></tr>
+              <tr><td class="text-muted">Amount Paid</td><td class="fw-bold text-danger">£{{ ticket.amount_paid }}</td></tr>
+              {% if ticket.discount_percent > 0 %}<tr><td class="text-muted">Discount Applied</td><td class="text-success">{{ ticket.discount_percent }}% off</td></tr>{% endif %}
+              <tr><td class="text-muted">Purchase Date</td><td>{{ ticket.purchase_date|date:"d M Y H:i" }}</td></tr>
+              <tr><td class="text-muted">Refundable</td><td>{% if ticket.category.is_refundable %}<i class="fa fa-check text-success"></i> Yes{% else %}<i class="fa fa-times text-danger"></i> No{% endif %}</td></tr>
+            </table>
+          </div>
+          {% if ticket.qr_code %}
+          <div class="col-md-4 text-center">
+            <img src="{{ ticket.qr_code.url }}" alt="QR Code" class="img-fluid border rounded" style="max-width:140px;">
+            <p class="small text-muted mt-2">Scan at entrance</p>
+          </div>
+          {% endif %}
+        </div>
+
+        {% if ticket.holders.all %}
+        <hr>
+        <h6 class="fw-bold">Attendees</h6>
+        <ul class="list-unstyled">
+          {% for h in ticket.holders.all %}
+          <li class="small"><i class="fa fa-user me-2 text-muted"></i>{{ h.name }} <span class="badge bg-secondary">{{ h.age_group }}</span></li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+      </div>
+      {% if ticket.status == 'active' %}
+      <div class="card-footer bg-transparent d-flex gap-2 flex-wrap">
+        {% if ticket.category.is_amendable %}<a href="{% url 'my_tickets:upgrade' ticket.ticket_number %}" class="btn btn-outline-primary btn-sm"><i class="fa fa-arrow-up me-1"></i>Upgrade</a>{% endif %}
+        <a href="{% url 'my_tickets:transfer' ticket.ticket_number %}" class="btn btn-outline-secondary btn-sm"><i class="fa fa-exchange-alt me-1"></i>Transfer</a>
+        <a href="{% url 'my_tickets:cancel' ticket.ticket_number %}" class="btn btn-outline-danger btn-sm"><i class="fa fa-ban me-1"></i>Request Cancellation</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

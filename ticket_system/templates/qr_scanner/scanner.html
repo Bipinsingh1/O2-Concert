@@ -1,0 +1,134 @@
+{% extends "layouts/base.html" %}
+{% block title %}QR Scanner – Admin{% endblock %}
+{% block extra_css %}
+<style>
+#reader { max-width: 400px; margin: 0 auto; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <h2 class="fw-bold mb-4"><i class="fa fa-qrcode text-danger me-2"></i>QR Code Scanner</h2>
+
+    <!-- Manual lookup -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-dark text-white fw-semibold">Manual Ticket Lookup</div>
+      <div class="card-body p-4">
+        <div class="input-group">
+          <input type="text" id="ticketInput" class="form-control form-control-lg" placeholder="Enter ticket number (e.g. O2-XXXXXXXXXXXXXXXXX)">
+          <button class="btn btn-danger" onclick="lookupTicket()"><i class="fa fa-search me-1"></i>Search</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Result -->
+    <div id="resultCard" class="card border-0 shadow-sm mb-4 d-none">
+      <div class="card-body p-4" id="resultBody"></div>
+    </div>
+
+    <!-- Camera scanner -->
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-dark text-white fw-semibold">Camera QR Scan</div>
+      <div class="card-body p-4">
+        <div id="reader"></div>
+        <div class="text-center mt-3">
+          <button class="btn btn-outline-danger" onclick="startCamera()"><i class="fa fa-camera me-2"></i>Start Camera</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script>
+const LOOKUP_URL  = "{% url 'qr_scanner:lookup' %}";
+const CHECKIN_URL = "{% url 'qr_scanner:checkin' %}";
+const CSRF_TOKEN  = "{{ csrf_token }}";
+
+let html5QrcodeScanner = null;
+
+async function lookupTicket() {
+  const num = document.getElementById('ticketInput').value.trim().toUpperCase();
+  if (!num) return;
+  const res  = await fetch(`${LOOKUP_URL}?ticket_number=${encodeURIComponent(num)}`);
+  const data = await res.json();
+  showResult(data);
+}
+
+function statusBadge(status) {
+  const colours = { active: 'bg-success', checked_in: 'bg-primary', cancelled: 'bg-danger' };
+  return `<span class="badge ${colours[status] || 'bg-secondary'}">${status.replace('_', ' ')}</span>`;
+}
+
+function showResult(data) {
+  const card = document.getElementById('resultCard');
+  const body = document.getElementById('resultBody');
+  card.classList.remove('d-none');
+
+  if (!data.found) {
+    card.className = 'card border-0 shadow-sm mb-4 border-danger border-2';
+    body.innerHTML = `<div class="text-danger fw-bold"><i class="fa fa-times-circle me-2"></i>${data.error || 'Ticket not found.'}</div>`;
+    return;
+  }
+
+  const canCheckin = data.status === 'active';
+  card.className = `card border-0 shadow-sm mb-4 border-${canCheckin ? 'success' : 'warning'} border-2`;
+  body.innerHTML = `
+    <h5 class="text-success fw-bold mb-3"><i class="fa fa-check-circle me-2"></i>Ticket Found</h5>
+    <table class="table table-borderless small mb-3">
+      <tr><td class="text-muted">Ticket Number</td><td><code>${data.ticket_number}</code></td></tr>
+      <tr><td class="text-muted">Category</td><td>${data.category}</td></tr>
+      <tr><td class="text-muted">Status</td><td>${statusBadge(data.status)}</td></tr>
+      <tr><td class="text-muted">Customer</td><td>${data.customer_name}</td></tr>
+      <tr><td class="text-muted">Purchase Date</td><td>${data.purchase_date}</td></tr>
+    </table>
+    ${canCheckin
+      ? `<button class="btn btn-success w-100 fw-bold" onclick="checkIn('${data.ticket_number}')">
+           <i class="fa fa-door-open me-2"></i>Check In
+         </button>`
+      : `<div class="alert alert-warning mb-0">
+           <i class="fa fa-exclamation-triangle me-2"></i>
+           This ticket cannot be checked in (status: <strong>${data.status.replace('_', ' ')}</strong>).
+         </div>`
+    }
+  `;
+}
+
+async function checkIn(ticketNumber) {
+  const btn = document.querySelector('#resultBody button');
+  if (btn) { btn.disabled = true; btn.textContent = 'Checking in…'; }
+
+  const res  = await fetch(CHECKIN_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': CSRF_TOKEN },
+    body: `ticket_number=${encodeURIComponent(ticketNumber)}`,
+  });
+  const data = await res.json();
+
+  if (data.success) {
+    document.getElementById('resultCard').className = 'card border-0 shadow-sm mb-4 border-primary border-2';
+    document.getElementById('resultBody').innerHTML = `
+      <div class="text-primary fw-bold fs-5"><i class="fa fa-door-open me-2"></i>${data.message}</div>
+      <p class="text-muted small mt-2 mb-0">${data.category}</p>
+    `;
+  } else {
+    const body = document.getElementById('resultBody');
+    const alert = document.createElement('div');
+    alert.className = 'alert alert-danger mt-3 mb-0';
+    alert.textContent = data.error;
+    body.appendChild(alert);
+    if (btn) { btn.disabled = false; btn.textContent = 'Check In'; }
+  }
+}
+
+function startCamera() {
+  if (html5QrcodeScanner) return;
+  html5QrcodeScanner = new Html5QrcodeScanner('reader', { fps: 10, qrbox: 250 });
+  html5QrcodeScanner.render(function(decodedText) {
+    document.getElementById('ticketInput').value = decodedText;
+    lookupTicket();
+  });
+}
+</script>
+{% endblock %}

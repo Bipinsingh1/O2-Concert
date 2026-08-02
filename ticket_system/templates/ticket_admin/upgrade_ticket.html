@@ -1,0 +1,43 @@
+{% extends "layouts/base.html" %}
+{% block title %}Upgrade Ticket – Admin{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <h2 class="fw-bold mb-4"><i class="fa fa-arrow-up text-danger me-2"></i>Upgrade Ticket (Admin)</h2>
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-body p-4">
+        <p class="text-muted mb-3">Upgrading <code>{{ ticket.ticket_number }}</code> for {{ ticket.customer_name }}</p>
+        <p class="text-muted small">Current: <strong>{{ ticket.category.name }}</strong> – £{{ ticket.amount_paid }}</p>
+        {% if options_with_diff %}
+        <form method="post">
+          {% csrf_token %}
+          {% for item in options_with_diff %}
+          <label class="card border mb-2 p-3 w-100 cursor-pointer">
+            <div class="d-flex align-items-center gap-3">
+              <input type="radio" name="new_category" value="{{ item.category.id }}" class="form-check-input mt-0">
+              <div class="flex-grow-1">
+                <strong>{{ item.category.name }}</strong>
+                <div class="small text-muted">Full price: £{{ item.category.price }}</div>
+              </div>
+              <div class="text-end">
+                {% if item.price_diff > 0 %}
+                  <div class="fw-bold text-danger">+£{{ item.price_diff }}</div>
+                  <div class="small text-muted">extra charge</div>
+                {% else %}
+                  <div class="fw-bold text-success">No charge</div>
+                {% endif %}
+              </div>
+            </div>
+          </label>
+          {% endfor %}
+          <button type="submit" class="btn btn-danger w-100 mt-3 fw-bold">Confirm Upgrade</button>
+        </form>
+        {% else %}
+        <div class="alert alert-warning">No upgrade options available.</div>
+        {% endif %}
+      </div>
+    </div>
+    <a href="{% url 'ticket_admin:detail' ticket.ticket_number %}" class="btn btn-outline-secondary btn-sm">Back</a>
+  </div>
+</div>
+{% endblock %}

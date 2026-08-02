@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Your Ticket – {{ event_name }}</title></head>
+<body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#f5f5f5;">
+  <div style="background:#1a1a2e;color:white;padding:30px;text-align:center;">
+    <h1 style="margin:0;font-size:24px;">🎵 The O2 Arena</h1>
+    <p style="color:#e94560;margin:5px 0;">{{ event_name }}</p>
+  </div>
+  <div style="background:white;padding:30px;">
+    <h2 style="color:#1a1a2e;">Booking Confirmed!</h2>
+    <p>Your ticket for <strong>{{ event_name }}</strong> has been confirmed.</p>
+    <table style="width:100%;border-collapse:collapse;">
+      <tr style="background:#f8f9fa;"><td style="padding:10px;color:#666;">Ticket Number</td><td style="padding:10px;font-weight:bold;font-family:monospace;">{{ ticket.ticket_number }}</td></tr>
+      <tr><td style="padding:10px;color:#666;">Ticket Type</td><td style="padding:10px;">{{ ticket.category.name }}</td></tr>
+      <tr style="background:#f8f9fa;"><td style="padding:10px;color:#666;">Event Date</td><td style="padding:10px;">30 November 2026</td></tr>
+      <tr><td style="padding:10px;color:#666;">Venue</td><td style="padding:10px;">The O2 Arena, London</td></tr>
+      <tr style="background:#f8f9fa;"><td style="padding:10px;color:#666;">Amount Paid</td><td style="padding:10px;font-weight:bold;color:#e94560;">£{{ ticket.amount_paid }}</td></tr>
+    </table>
+    <p style="margin-top:20px;">Your PDF ticket with QR code is attached. Please present the QR code at the venue entrance.</p>
+    <p style="color:#666;font-size:13px;">The O2 Arena &bull; Peninsula Square &bull; London SE10 0DX</p>
+  </div>
+</body>
+</html>

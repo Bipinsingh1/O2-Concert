@@ -1,0 +1,54 @@
+{% extends "layouts/base.html" %}
+{% block title %}Ticket {{ ticket.ticket_number }} – Admin{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <nav aria-label="breadcrumb" class="mb-3">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'ticket_admin:list' %}">Manage Tickets</a></li>
+        <li class="breadcrumb-item active">{{ ticket.ticket_number }}</li>
+      </ol>
+    </nav>
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-dark text-white d-flex justify-content-between">
+        <span class="fw-bold">{{ ticket.ticket_number }}</span>
+        <span class="badge {% if ticket.status == 'active' %}bg-success{% elif ticket.status == 'cancelled' %}bg-danger{% else %}bg-warning text-dark{% endif %}">{{ ticket.get_status_display }}</span>
+      </div>
+      <div class="card-body p-4">
+        <div class="row g-4">
+          <div class="col-md-8">
+            <table class="table table-borderless small">
+              <tr><td class="text-muted">Category</td><td class="fw-semibold">{{ ticket.category.name }}</td></tr>
+              <tr><td class="text-muted">Customer</td><td>{{ ticket.customer_name }}</td></tr>
+              <tr><td class="text-muted">Email</td><td>{{ ticket.customer_email }}</td></tr>
+              <tr><td class="text-muted">Guest Purchase</td><td>{% if ticket.is_guest_purchase %}<span class="badge bg-secondary">Yes</span>{% else %}No{% endif %}</td></tr>
+              <tr><td class="text-muted">Amount Paid</td><td class="fw-bold">£{{ ticket.amount_paid }}</td></tr>
+              <tr><td class="text-muted">Discount</td><td>{{ ticket.discount_percent }}%</td></tr>
+              <tr><td class="text-muted">Purchase Date</td><td>{{ ticket.purchase_date|date:"d M Y H:i" }}</td></tr>
+            </table>
+          </div>
+          {% if ticket.qr_code %}
+          <div class="col-md-4 text-center">
+            <img src="{{ ticket.qr_code.url }}" alt="QR Code" class="img-fluid border rounded mb-2" style="max-width:140px;">
+            <div class="small text-muted">QR Code</div>
+          </div>
+          {% endif %}
+        </div>
+        {% if ticket.holders.all %}
+        <hr>
+        <h6 class="fw-bold">Attendees</h6>
+        <ul class="list-unstyled">
+          {% for h in ticket.holders.all %}<li class="small"><i class="fa fa-user me-2 text-muted"></i>{{ h.name }} <span class="badge bg-light text-dark">{{ h.age_group }}</span></li>{% endfor %}
+        </ul>
+        {% endif %}
+      </div>
+      {% if ticket.status == 'active' %}
+      <div class="card-footer bg-transparent d-flex gap-2">
+        {% if ticket.category.is_amendable %}<a href="{% url 'ticket_admin:upgrade' ticket.ticket_number %}" class="btn btn-outline-primary btn-sm"><i class="fa fa-arrow-up me-1"></i>Upgrade</a>{% endif %}
+        <a href="{% url 'ticket_admin:cancel' ticket.ticket_number %}" class="btn btn-outline-danger btn-sm"><i class="fa fa-ban me-1"></i>Cancel</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

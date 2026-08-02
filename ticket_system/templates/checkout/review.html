@@ -1,0 +1,77 @@
+{% extends "layouts/base.html" %}
+{% block title %}Order Review – The O2 Arena{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <h2 class="fw-bold mb-4"><i class="fa fa-clipboard-list text-danger me-2"></i>Order Review</h2>
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-dark text-white fw-semibold">Ticket Summary</div>
+      <div class="card-body p-4">
+        <table class="table table-borderless mb-0">
+          <tr>
+            <td class="text-muted">Event</td>
+            <td class="fw-semibold">Dua Lipa – The O2 Arena, 30 Nov 2026</td>
+          </tr>
+          <tr>
+            <td class="text-muted">Ticket Type</td>
+            <td class="fw-semibold">{{ category.name }}</td>
+          </tr>
+          {% if members %}
+          <tr>
+            <td class="text-muted">Members</td>
+            <td>
+              <ul class="list-unstyled mb-0">
+                {% for m in members %}<li>{{ m.name }} ({{ m.age_group }})</li>{% endfor %}
+              </ul>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td class="text-muted">Quantity</td>
+            <td>
+              <span class="fw-semibold">{{ quantity }} ticket{{ quantity|pluralize }}</span>
+              <span class="text-muted small ms-2">× £{{ pricing.final_price }} each</span>
+            </td>
+          </tr>
+          {% endif %}
+          <tr>
+            <td class="text-muted">Price per Ticket</td>
+            <td>£{{ pricing.original_price }}</td>
+          </tr>
+          {% if pricing.discount_percent > 0 %}
+          <tr>
+            <td class="text-muted text-success">Discount ({{ pricing.discount_percent }}%)</td>
+            <td class="text-success">−£{{ total_discount }}</td>
+          </tr>
+          {% endif %}
+          {% if quantity > 1 %}
+          <tr>
+            <td class="text-muted">Subtotal ({{ quantity }}×)</td>
+            <td>£{{ total_original }}</td>
+          </tr>
+          {% endif %}
+          <tr class="table-active">
+            <td class="fw-bold">Total</td>
+            <td class="fw-bold fs-5 text-danger">£{{ total_final }}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    {% if not user.is_authenticated %}
+    <div class="alert alert-warning small">
+      <i class="fa fa-exclamation-triangle me-2"></i>You are buying as a guest. Guest purchases are <strong>non-refundable</strong>.
+    </div>
+    {% endif %}
+
+    <div class="d-grid gap-2">
+      <a href="{% url 'checkout:payment' %}" class="btn btn-danger btn-lg fw-bold">
+        <i class="fa fa-lock me-2"></i>Proceed to Payment – £{{ total_final }}
+      </a>
+      <a href="{% url 'ticket_sales:list' %}" class="btn btn-outline-secondary">
+        <i class="fa fa-arrow-left me-2"></i>Back to Tickets
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

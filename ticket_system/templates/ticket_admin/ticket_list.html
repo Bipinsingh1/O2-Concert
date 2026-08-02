@@ -1,0 +1,51 @@
+{% extends "layouts/base.html" %}
+{% block title %}Manage Tickets – Admin{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="fw-bold mb-0"><i class="fa fa-ticket text-danger me-2"></i>Manage Tickets</h2>
+  <a href="{% url 'dashboard:index' %}" class="btn btn-outline-secondary btn-sm"><i class="fa fa-gauge me-1"></i>Dashboard</a>
+</div>
+<form class="d-flex mb-4 gap-2" method="get">
+  <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Search by ticket number, email, or name…">
+  <button type="submit" class="btn btn-danger px-4"><i class="fa fa-search"></i></button>
+</form>
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-dark"><tr>
+          <th>Ticket Number</th><th>Category</th><th>Customer</th><th>Status</th><th>Amount</th><th>Date</th><th>Actions</th>
+        </tr></thead>
+        <tbody>
+          {% for ticket in tickets %}
+          <tr>
+            <td><code class="small">{{ ticket.ticket_number }}</code></td>
+            <td>{{ ticket.category.name }}</td>
+            <td>
+              {{ ticket.customer_name }}
+              {% if ticket.is_guest_purchase %}<span class="badge bg-secondary ms-1 small">Guest</span>{% endif %}
+            </td>
+            <td><span class="badge {% if ticket.status == 'active' %}bg-success{% elif ticket.status == 'cancelled' %}bg-danger{% else %}bg-warning text-dark{% endif %}">{{ ticket.get_status_display }}</span></td>
+            <td>£{{ ticket.amount_paid }}</td>
+            <td class="small text-muted">{{ ticket.purchase_date|date:"d M Y" }}</td>
+            <td>
+              <div class="d-flex gap-1 flex-wrap">
+                <a href="{% url 'ticket_admin:detail' ticket.ticket_number %}" class="btn btn-sm btn-outline-secondary">View</a>
+                {% if ticket.status == 'active' %}
+                  {% if ticket.category.is_amendable %}
+                    <a href="{% url 'ticket_admin:upgrade' ticket.ticket_number %}" class="btn btn-sm btn-outline-primary">Upgrade</a>
+                  {% endif %}
+                  <a href="{% url 'ticket_admin:cancel' ticket.ticket_number %}" class="btn btn-sm btn-outline-danger">Cancel</a>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="7" class="text-center text-muted py-4">No tickets found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

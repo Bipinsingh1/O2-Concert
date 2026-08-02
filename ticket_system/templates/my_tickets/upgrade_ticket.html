@@ -1,0 +1,126 @@
+{% extends "layouts/base.html" %}
+{% block title %}Upgrade Ticket{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <nav aria-label="breadcrumb" class="mb-3">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'my_tickets:list' %}">My Tickets</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'my_tickets:detail' ticket.ticket_number %}">{{ ticket.ticket_number }}</a></li>
+        <li class="breadcrumb-item active">Upgrade</li>
+      </ol>
+    </nav>
+
+    <h2 class="fw-bold mb-4"><i class="fa fa-arrow-up text-danger me-2"></i>Upgrade Ticket</h2>
+
+    <!-- Current ticket -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-dark text-white fw-semibold">Current Ticket</div>
+      <div class="card-body p-3 d-flex justify-content-between align-items-center">
+        <div>
+          <code class="small text-muted">{{ ticket.ticket_number }}</code>
+          <div class="fw-semibold mt-1">{{ ticket.category.name }}</div>
+        </div>
+        <div class="text-end">
+          <div class="text-muted small">Paid</div>
+          <div class="fw-bold">£{{ ticket.amount_paid }}</div>
+        </div>
+      </div>
+    </div>
+
+    {% if options_with_diff %}
+    <form method="post" id="upgrade-form">
+      {% csrf_token %}
+      <p class="text-muted small mb-3">Select the tier you'd like to upgrade to. You'll only pay the difference.</p>
+      <div class="row g-3 mb-4" id="upgrade-options">
+        {% for item in options_with_diff %}
+        <div class="col-12">
+          <label class="d-block cursor-pointer">
+            <input type="radio" name="new_category" value="{{ item.category.id }}"
+                   class="d-none upgrade-radio" data-diff="{{ item.price_diff }}"
+                   data-name="{{ item.category.name }}">
+            <div class="card border-2 shadow-sm option-card" style="cursor:pointer;transition:border-color .15s,box-shadow .15s;">
+              <div class="card-body p-3 d-flex align-items-center gap-3">
+                <div class="flex-shrink-0 rounded-circle d-flex align-items-center justify-content-center"
+                     style="width:40px;height:40px;background:rgba(230,57,70,.1);">
+                  <i class="fa fa-star text-danger"></i>
+                </div>
+                <div class="flex-grow-1">
+                  <div class="fw-bold">{{ item.category.name }}</div>
+                  <div class="small text-muted">{{ item.category.description }}</div>
+                </div>
+                <div class="text-end">
+                  <div class="fw-bold text-danger">+£{{ item.price_diff }}</div>
+                  <div class="text-muted small">to pay now</div>
+                  <div class="text-muted" style="font-size:.75rem;">Full price £{{ item.category.price }}</div>
+                </div>
+              </div>
+            </div>
+          </label>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="alert alert-info border-0 small mb-4">
+        <i class="fa fa-info-circle me-2"></i>Upgrades are one-way and cannot be reversed.
+        You will be taken to a secure payment page to pay the difference.
+      </div>
+
+      <!-- Summary bar (hidden until an option is selected) -->
+      <div id="upgrade-summary" class="card border-danger border-2 shadow-sm mb-3 d-none">
+        <div class="card-body p-3 d-flex justify-content-between align-items-center">
+          <span class="text-muted small fw-semibold">
+            Upgrading to <strong id="summary-name" class="text-dark"></strong>
+          </span>
+          <span class="fw-bold text-danger fs-5">+£<span id="summary-diff">0.00</span></span>
+        </div>
+      </div>
+
+      <div class="d-grid gap-2">
+        <button type="submit" class="btn btn-danger btn-lg fw-bold" id="upgrade-btn" disabled>
+          <i class="fa fa-credit-card me-2"></i>Continue to Payment
+        </button>
+        <a href="{% url 'my_tickets:detail' ticket.ticket_number %}" class="btn btn-outline-secondary">Cancel</a>
+      </div>
+    </form>
+    {% else %}
+    <div class="alert alert-warning border-0">
+      <i class="fa fa-info-circle me-2"></i>No upgrade options available for this ticket.
+    </div>
+    <a href="{% url 'my_tickets:detail' ticket.ticket_number %}" class="btn btn-outline-secondary">Back</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  const radios  = document.querySelectorAll('.upgrade-radio');
+  const cards   = document.querySelectorAll('.option-card');
+  const btn     = document.getElementById('upgrade-btn');
+  const summary = document.getElementById('upgrade-summary');
+  const sumName = document.getElementById('summary-name');
+  const sumDiff = document.getElementById('summary-diff');
+
+  radios.forEach(function (radio, i) {
+    radio.closest('label').addEventListener('click', function () {
+      // Deselect all
+      cards.forEach(function (c) {
+        c.style.borderColor = '#dee2e6';
+        c.style.boxShadow = '';
+      });
+      // Select this
+      radio.checked = true;
+      cards[i].style.borderColor = '#e63946';
+      cards[i].style.boxShadow = '0 0 0 3px rgba(230,57,70,.15)';
+
+      sumName.textContent = radio.dataset.name;
+      sumDiff.textContent = parseFloat(radio.dataset.diff).toFixed(2);
+      summary.classList.remove('d-none');
+      btn.disabled = false;
+    });
+  });
+})();
+</script>
+{% endblock %}

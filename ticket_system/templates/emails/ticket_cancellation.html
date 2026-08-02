@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Ticket Cancellation – {{ event_name }}</title></head>
+<body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#f5f5f5;">
+  <div style="background:#1a1a2e;color:white;padding:30px;text-align:center;">
+    <h1 style="margin:0;font-size:24px;">The O2 Arena</h1>
+  </div>
+  <div style="background:white;padding:30px;">
+    <h2 style="color:#dc3545;">Ticket Cancelled</h2>
+    <p>Your ticket <strong>{{ ticket.ticket_number }}</strong> has been cancelled.</p>
+    {% if refund_amount %}
+    <p>A refund of <strong>£{{ refund_amount }}</strong> will be processed to your original payment method within 5-10 business days.</p>
+    {% else %}
+    <p>No refund is applicable for this ticket type.</p>
+    {% endif %}
+    <p style="color:#666;font-size:13px;">If you have any questions, contact us at tickets@o2arena.com</p>
+  </div>
+</body>
+</html>

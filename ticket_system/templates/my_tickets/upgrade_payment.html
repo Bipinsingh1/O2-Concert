@@ -1,0 +1,161 @@
+{% extends "layouts/base.html" %}
+{% block title %}Upgrade Payment – The O2 Arena{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <nav aria-label="breadcrumb" class="mb-3">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'my_tickets:list' %}">My Tickets</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'my_tickets:detail' ticket.ticket_number %}">{{ ticket.ticket_number }}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'my_tickets:upgrade' ticket.ticket_number %}">Upgrade</a></li>
+        <li class="breadcrumb-item active">Payment</li>
+      </ol>
+    </nav>
+
+    <h2 class="fw-bold mb-4"><i class="fa fa-credit-card text-danger me-2"></i>Pay Upgrade Difference</h2>
+
+    <!-- Upgrade summary -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-dark text-white fw-semibold d-flex justify-content-between align-items-center">
+        <span><i class="fa fa-arrow-up me-2"></i>Upgrade Summary</span>
+        <span class="text-danger fw-bold">£{{ price_diff }}</span>
+      </div>
+      <div class="card-body p-4">
+        <div class="d-flex align-items-center gap-3">
+          <div class="text-center px-3 py-2 rounded-3" style="background:rgba(108,117,125,.1);">
+            <div class="text-muted small">From</div>
+            <div class="fw-bold">{{ old_category_name }}</div>
+          </div>
+          <div class="text-danger fs-4 fw-bold">→</div>
+          <div class="text-center px-3 py-2 rounded-3" style="background:rgba(230,57,70,.08);border:1px solid rgba(230,57,70,.2);">
+            <div class="text-danger small fw-semibold">To</div>
+            <div class="fw-bold text-danger">{{ new_category_name }}</div>
+          </div>
+        </div>
+        <hr class="my-3">
+        <div class="d-flex justify-content-between small text-muted">
+          <span>Ticket</span><span><code>{{ ticket.ticket_number }}</code></span>
+        </div>
+        <div class="d-flex justify-content-between small text-muted mt-1">
+          <span>Already paid</span><span>£{{ ticket.amount_paid }}</span>
+        </div>
+        <div class="d-flex justify-content-between fw-bold mt-2 pt-2 border-top">
+          <span>Amount due today</span>
+          <span class="text-danger fs-5">£{{ price_diff }}</span>
+        </div>
+      </div>
+    </div>
+
+    {% if payment_result.success %}
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-body p-4">
+        <form method="post" id="upgrade-payment-form" novalidate>
+          {% csrf_token %}
+          <input type="hidden" name="payment_intent_id" value="{{ payment_result.intent_id }}">
+
+          <!-- Cardholder name -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="card_holder_name">Name on Card</label>
+            <input type="text" class="form-control" id="card_holder_name" name="card_holder_name"
+                   placeholder="e.g. Jane Smith" required autocomplete="cc-name">
+            <div class="invalid-feedback">Please enter the name on your card.</div>
+          </div>
+
+          <!-- Card number -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="card_number">Card Number</label>
+            <input type="text" class="form-control" id="card_number" name="card_number"
+                   placeholder="1234 5678 9012 3456" maxlength="19"
+                   required autocomplete="cc-number" inputmode="numeric">
+            <div class="invalid-feedback">Please enter a valid 16-digit card number.</div>
+          </div>
+
+          <!-- Expiry + CVV -->
+          <div class="row g-3 mb-4">
+            <div class="col-7">
+              <label class="form-label fw-semibold" for="card_expiry">Expiry Date</label>
+              <input type="text" class="form-control" id="card_expiry" name="card_expiry"
+                     placeholder="MM / YY" maxlength="7"
+                     required autocomplete="cc-exp" inputmode="numeric">
+              <div class="invalid-feedback">Please enter a valid expiry date (MM / YY).</div>
+            </div>
+            <div class="col-5">
+              <label class="form-label fw-semibold" for="card_cvv">CVV</label>
+              <input type="text" class="form-control" id="card_cvv" name="card_cvv"
+                     placeholder="123" maxlength="4"
+                     required autocomplete="cc-csc" inputmode="numeric">
+              <div class="invalid-feedback">Please enter your CVV.</div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-danger btn-lg w-100 fw-bold" id="pay-btn">
+            <i class="fa fa-lock me-2"></i>Pay £{{ price_diff }} &amp; Upgrade Ticket
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <p class="text-center text-muted small mt-2">
+      <i class="fa fa-shield-halved text-success me-1"></i>Secured by Stripe. Card data is never stored on our servers.
+    </p>
+    {% else %}
+    <div class="alert alert-danger">Payment initiation failed: {{ payment_result.error }}</div>
+    <a href="{% url 'my_tickets:upgrade' ticket.ticket_number %}" class="btn btn-outline-secondary">Try again</a>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+(function () {
+  const cardInput   = document.getElementById('card_number');
+  const expiryInput = document.getElementById('card_expiry');
+  const cvvInput    = document.getElementById('card_cvv');
+
+  cardInput.addEventListener('input', function () {
+    let v = this.value.replace(/\D/g, '').slice(0, 16);
+    this.value = v.replace(/(.{4})/g, '$1 ').trim();
+  });
+
+  expiryInput.addEventListener('input', function () {
+    let v = this.value.replace(/\D/g, '').slice(0, 4);
+    this.value = v.length >= 3 ? v.slice(0, 2) + ' / ' + v.slice(2) : v;
+  });
+
+  cvvInput.addEventListener('input', function () {
+    this.value = this.value.replace(/\D/g, '').slice(0, 4);
+  });
+
+  document.getElementById('upgrade-payment-form').addEventListener('submit', function (e) {
+    let valid = true;
+
+    const name = document.getElementById('card_holder_name');
+    if (!name.value.trim()) { name.classList.add('is-invalid'); valid = false; }
+    else { name.classList.remove('is-invalid'); name.classList.add('is-valid'); }
+
+    const digits = cardInput.value.replace(/\s/g, '');
+    if (digits.length !== 16) { cardInput.classList.add('is-invalid'); valid = false; }
+    else { cardInput.classList.remove('is-invalid'); cardInput.classList.add('is-valid'); }
+
+    const expParts = expiryInput.value.replace(/\s/g, '').split('/');
+    const month = parseInt(expParts[0], 10);
+    const year  = parseInt('20' + (expParts[1] || ''), 10);
+    const now   = new Date();
+    const expValid = expParts.length === 2 && month >= 1 && month <= 12 &&
+                     (year > now.getFullYear() || (year === now.getFullYear() && month >= now.getMonth() + 1));
+    if (!expValid) { expiryInput.classList.add('is-invalid'); valid = false; }
+    else { expiryInput.classList.remove('is-invalid'); expiryInput.classList.add('is-valid'); }
+
+    const cvv = cvvInput.value.trim();
+    if (cvv.length < 3) { cvvInput.classList.add('is-invalid'); valid = false; }
+    else { cvvInput.classList.remove('is-invalid'); cvvInput.classList.add('is-valid'); }
+
+    if (!valid) { e.preventDefault(); e.stopPropagation(); }
+    else {
+      const btn = document.getElementById('pay-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing…';
+    }
+  });
+})();
+</script>
+{% endblock %}

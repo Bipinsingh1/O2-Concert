@@ -1,0 +1,145 @@
+{% extends "layouts/base.html" %}
+{% block title %}Payment – The O2 Arena{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <h2 class="fw-bold mb-4"><i class="fa fa-credit-card text-danger me-2"></i>Secure Payment</h2>
+
+    <!-- Order summary -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-dark text-white fw-semibold d-flex justify-content-between">
+        <span>Order Summary</span>
+        <span class="text-danger fw-bold">£{{ total_amount }}</span>
+      </div>
+      <div class="card-body p-4">
+        <p class="text-muted small mb-1">{{ category.name }} – Dua Lipa, 30 Nov 2026</p>
+        {% if quantity > 1 %}
+        <p class="text-muted small mb-0">
+          <i class="fa fa-layer-group me-1 text-danger"></i>
+          {{ quantity }} tickets &nbsp;·&nbsp; £{{ per_ticket_price }} each
+        </p>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if payment_result.success %}
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-body p-4">
+        <form method="post" action="{% url 'checkout:confirm' %}" id="payment-form" novalidate>
+          {% csrf_token %}
+          <input type="hidden" name="payment_intent_id" value="{{ payment_result.intent_id }}">
+
+          <!-- Cardholder name -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="card_holder_name">Name on Card</label>
+            <input type="text" class="form-control" id="card_holder_name" name="card_holder_name"
+                   placeholder="e.g. Jane Smith" required autocomplete="cc-name">
+            <div class="invalid-feedback">Please enter the name on your card.</div>
+          </div>
+
+          <!-- Card number -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="card_number">Card Number</label>
+            <input type="text" class="form-control" id="card_number" name="card_number"
+                   placeholder="1234 5678 9012 3456" maxlength="19"
+                   required autocomplete="cc-number" inputmode="numeric">
+            <div class="invalid-feedback">Please enter a valid 16-digit card number.</div>
+          </div>
+
+          <!-- Expiry + CVV -->
+          <div class="row g-3 mb-4">
+            <div class="col-7">
+              <label class="form-label fw-semibold" for="card_expiry">Expiry Date</label>
+              <input type="text" class="form-control" id="card_expiry" name="card_expiry"
+                     placeholder="MM / YY" maxlength="7"
+                     required autocomplete="cc-exp" inputmode="numeric">
+              <div class="invalid-feedback">Please enter a valid expiry date (MM / YY).</div>
+            </div>
+            <div class="col-5">
+              <label class="form-label fw-semibold" for="card_cvv">CVV</label>
+              <input type="text" class="form-control" id="card_cvv" name="card_cvv"
+                     placeholder="123" maxlength="4"
+                     required autocomplete="cc-csc" inputmode="numeric">
+              <div class="invalid-feedback">Please enter your CVV.</div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-danger btn-lg w-100 fw-bold" id="pay-btn">
+            <i class="fa fa-lock me-2"></i>Complete Payment – £{{ total_amount }}
+          </button>
+        </form>
+      </div>
+    </div>
+    {% else %}
+    <div class="alert alert-danger">Payment initiation failed: {{ payment_result.error }}</div>
+    {% endif %}
+
+    <p class="text-center text-muted small mt-3">
+      <i class="fa fa-shield-halved text-success me-1"></i>Secured by Stripe. Card data is never stored on our servers.
+    </p>
+  </div>
+</div>
+
+<script>
+(function () {
+  // Format card number with spaces every 4 digits
+  const cardInput = document.getElementById('card_number');
+  cardInput.addEventListener('input', function () {
+    let v = this.value.replace(/\D/g, '').slice(0, 16);
+    this.value = v.replace(/(.{4})/g, '$1 ').trim();
+  });
+
+  // Format expiry as MM / YY
+  const expiryInput = document.getElementById('card_expiry');
+  expiryInput.addEventListener('input', function () {
+    let v = this.value.replace(/\D/g, '').slice(0, 4);
+    if (v.length >= 3) {
+      this.value = v.slice(0, 2) + ' / ' + v.slice(2);
+    } else {
+      this.value = v;
+    }
+  });
+
+  // CVV: digits only
+  const cvvInput = document.getElementById('card_cvv');
+  cvvInput.addEventListener('input', function () {
+    this.value = this.value.replace(/\D/g, '').slice(0, 4);
+  });
+
+  // Validate on submit
+  document.getElementById('payment-form').addEventListener('submit', function (e) {
+    let valid = true;
+
+    // Name
+    const name = document.getElementById('card_holder_name');
+    if (!name.value.trim()) { name.classList.add('is-invalid'); valid = false; }
+    else { name.classList.remove('is-invalid'); name.classList.add('is-valid'); }
+
+    // Card number — must be 16 digits
+    const digits = cardInput.value.replace(/\s/g, '');
+    if (digits.length !== 16) { cardInput.classList.add('is-invalid'); valid = false; }
+    else { cardInput.classList.remove('is-invalid'); cardInput.classList.add('is-valid'); }
+
+    // Expiry — MM / YY, month 01-12, year >= current
+    const expParts = expiryInput.value.replace(/\s/g, '').split('/');
+    const month = parseInt(expParts[0], 10);
+    const year = parseInt('20' + (expParts[1] || ''), 10);
+    const now = new Date();
+    const expValid = expParts.length === 2 && month >= 1 && month <= 12 &&
+                     (year > now.getFullYear() || (year === now.getFullYear() && month >= now.getMonth() + 1));
+    if (!expValid) { expiryInput.classList.add('is-invalid'); valid = false; }
+    else { expiryInput.classList.remove('is-invalid'); expiryInput.classList.add('is-valid'); }
+
+    // CVV — 3 or 4 digits
+    const cvv = cvvInput.value.trim();
+    if (cvv.length < 3) { cvvInput.classList.add('is-invalid'); valid = false; }
+    else { cvvInput.classList.remove('is-invalid'); cvvInput.classList.add('is-valid'); }
+
+    if (!valid) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  });
+})();
+</script>
+{% endblock %}

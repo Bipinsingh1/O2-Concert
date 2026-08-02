@@ -1,0 +1,118 @@
+{% extends "layouts/base.html" %}
+{% block title %}Select Ticket – {{ category.name }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <nav aria-label="breadcrumb" class="mb-3">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'ticket_sales:list' %}">Tickets</a></li>
+        <li class="breadcrumb-item active">{{ category.name }}</li>
+      </ol>
+    </nav>
+    <h2 class="fw-bold mb-4"><i class="fa fa-ticket text-danger me-2"></i>{{ category.name }}</h2>
+
+    <!-- Pricing card -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <h5 class="fw-bold">{{ category.name }}</h5>
+            <p class="text-muted small mb-0">{{ category.description }}</p>
+          </div>
+          <div class="text-end">
+            <div class="price-tag" id="unit-price-display">£{{ pricing.final_price }}</div>
+            {% if pricing.discount_percent > 0 %}
+              <div class="text-muted text-decoration-line-through small">£{{ pricing.original_price }}</div>
+              <span class="badge bg-success">{{ pricing.discount_percent }}% off</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="category" value="{{ category.id }}">
+
+      <!-- Quantity selector -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-dark text-white fw-semibold">
+          <i class="fa fa-layer-group me-2"></i>How many tickets?
+        </div>
+        <div class="card-body p-4">
+          <div class="d-flex align-items-center gap-3">
+            <button type="button" class="btn btn-outline-secondary qty-btn" id="qty-minus"
+                    style="width:42px;height:42px;font-size:1.2rem;padding:0;">−</button>
+            <input type="number" name="quantity" id="qty-input" value="1" min="1" max="10"
+                   class="form-control text-center fw-bold fs-5" style="width:70px;">
+            <button type="button" class="btn btn-outline-secondary qty-btn" id="qty-plus"
+                    style="width:42px;height:42px;font-size:1.2rem;padding:0;">+</button>
+            <span class="text-muted small">per person &nbsp;·&nbsp; max 10</span>
+          </div>
+
+          <!-- Live total -->
+          <div class="mt-3 rounded-3 p-3 d-flex justify-content-between align-items-center"
+               style="background:rgba(230,57,70,.07);border:1px solid rgba(230,57,70,.15);">
+            <span class="text-muted small fw-semibold">
+              <span id="qty-label">1</span> × £{{ pricing.final_price }}
+              {% if pricing.discount_percent > 0 %}
+                <span class="badge bg-success ms-1">{{ pricing.discount_percent }}% off</span>
+              {% endif %}
+            </span>
+            <span class="fw-bold text-danger fs-5" id="total-price">£{{ pricing.final_price }}</span>
+          </div>
+        </div>
+      </div>
+
+      {% if not user.is_authenticated %}
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-light fw-semibold">Guest Information</div>
+        <div class="card-body p-4">
+          <p class="text-muted small"><i class="fa fa-info-circle me-1"></i>Buying as a guest – no account required. Note: guest purchases are non-refundable.</p>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Full Name *</label>
+            {{ form.guest_name }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Email Address *</label>
+            {{ form.guest_email }}
+            <div class="form-text">Your tickets will be sent to this email.</div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <button type="submit" class="btn btn-danger btn-lg w-100 fw-bold">
+        <i class="fa fa-arrow-right me-2"></i>Continue to Review
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  const unitPrice = {{ pricing.final_price }};
+  const qtyInput  = document.getElementById('qty-input');
+  const qtyLabel  = document.getElementById('qty-label');
+  const totalEl   = document.getElementById('total-price');
+  const minusBtn  = document.getElementById('qty-minus');
+  const plusBtn   = document.getElementById('qty-plus');
+
+  function update() {
+    let qty = Math.min(10, Math.max(1, parseInt(qtyInput.value) || 1));
+    qtyInput.value = qty;
+    qtyLabel.textContent = qty;
+    totalEl.textContent  = '£' + (unitPrice * qty).toFixed(2);
+    minusBtn.disabled = qty <= 1;
+    plusBtn.disabled  = qty >= 10;
+  }
+
+  minusBtn.addEventListener('click', function () { qtyInput.value = Math.max(1,  parseInt(qtyInput.value) - 1); update(); });
+  plusBtn.addEventListener ('click', function () { qtyInput.value = Math.min(10, parseInt(qtyInput.value) + 1); update(); });
+  qtyInput.addEventListener('input', update);
+  update();
+})();
+</script>
+{% endblock %}
